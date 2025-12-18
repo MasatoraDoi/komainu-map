@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Komainu Map</title>
+
+  <!-- Leaflet（CDN） -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="title">Komainu Map</div>
+      <div class="subtitle">狛犬がいる神社を地図で探す（MVP）</div>
+    </div>
+    <div class="controls">
+      <input id="q" type="search" placeholder="神社名 / タグで検索（例: 観光地）" />
+    </div>
+  </header>
+
+  <main class="layout">
+    <section id="map"></section>
+    <aside class="panel">
+      <div class="panel-title">スポット詳細</div>
+      <div id="detail" class="detail">
+        <p>地図のマーカーをクリックすると、ここに表示します。</p>
+      </div>
+      <div class="hint">
+        <p class="hint-title">次にやると強い</p>
+        <ul>
+          <li>阿/吽・姿勢（お座り/尻上げ/玉乗り）などタグを増やす</li>
+          <li>スポット10件に増やす</li>
+          <li>READMEに「デプロイURL」「使い方」を書く</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <small>
+      Map tiles &copy; OpenStreetMap contributors / Leaflet
+    </small>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

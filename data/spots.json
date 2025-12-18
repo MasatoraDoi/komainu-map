@@ -1,0 +1,22 @@
+[
+  {
+    "id": "hiroshima-gokoku",
+    "name": "広島護国神社",
+    "lat": 34.3967,
+    "lon": 132.4584,
+    "tags": ["狛犬", "阿吽", "市街地"],
+    "komainu_style": "不明（要調査）",
+    "memo": "とりあえずサンプル。後で現地写真や特徴を書く。",
+    "source_url": "https://example.com"
+  },
+  {
+    "id": "itsukushima",
+    "name": "嚴島神社（厳島神社）",
+    "lat": 34.2959,
+    "lon": 132.3199,
+    "tags": ["狛犬", "観光地"],
+    "komainu_style": "不明（要調査）",
+    "memo": "ここもサンプル。狛犬ポイントは境内のどこかを後で特定。",
+    "source_url": "https://example.com"
+  }
+]
