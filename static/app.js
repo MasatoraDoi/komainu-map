@@ -1,6 +1,9 @@
 let map;
 let markers = [];
 let allSpots = [];
+let myLocationMarker = null;
+let myAccuracyCircle = null;
+
 
 function escapeHtml(s) {
   return String(s ?? "")
@@ -78,6 +81,26 @@ async function init() {
 
   setTimeout(() => map.invalidateSize(), 0);
   window.addEventListener("resize", () => map && map.invalidateSize());
+
+    const locateBtn = document.getElementById("locate-btn");
+  locateBtn.addEventListener("click", () => {
+    // Leaflet の位置取得（ブラウザに許可ダイアログが出る）
+    map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+  });
+
+  map.on("locationfound", (e) => {
+    // 既存の現在地表示を消す
+    if (myLocationMarker) map.removeLayer(myLocationMarker);
+    if (myAccuracyCircle) map.removeLayer(myAccuracyCircle);
+
+    myLocationMarker = L.marker(e.latlng).addTo(map).bindPopup("現在地").openPopup();
+    myAccuracyCircle = L.circle(e.latlng, { radius: e.accuracy }).addTo(map);
+  });
+
+  map.on("locationerror", (e) => {
+    alert("現在地を取得できませんでした: " + (e.message || "位置情報がブロックされている可能性があります"));
+  });
+
 }
 
 init().catch(err => {

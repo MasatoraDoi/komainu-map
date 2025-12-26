@@ -65,3 +65,22 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-
     width: 100%;
   }
 }
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.controls button {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.controls button:active {
+  transform: translateY(1px);
+}
+
