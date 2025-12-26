@@ -82,7 +82,7 @@ async function init() {
   setTimeout(() => map.invalidateSize(), 0);
   window.addEventListener("resize", () => map && map.invalidateSize());
 
-    const locateBtn = document.getElementById("locate-btn");
+  const locateBtn = document.getElementById("locate-btn");
   locateBtn.addEventListener("click", () => {
     // Leaflet の位置取得（ブラウザに許可ダイアログが出る）
     map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
