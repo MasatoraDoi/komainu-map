@@ -156,9 +156,9 @@ function setSelectedRing(lat, lon) {
 
   // circleMarkerならズームしても見た目が安定
   selectedRing = L.circleMarker([lat, lon], {
-    radius: 18,
-    color: "#111827",
-    weight: 3,
+    radius: 14,
+    color: "#00000080",
+    weight: 2,
     fillOpacity: 0
   }).addTo(map);
 }
