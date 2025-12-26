@@ -150,7 +150,7 @@ function drawMarkers(spots) {
     const m = L.marker([s.lat, s.lon], { icon: iconForColor(colorKey) }).addTo(map);
 
     m.on("click", () => renderDetail(s));
-    m.bindPopup(`<b>${escapeHtml(s.name)}</b><br/>クリックで詳細表示`);
+    m.bindPopup(`<b>${escapeHtml(s.name)}</b>`);
 
     markers.push(m);
     markersById[spotId] = m;
@@ -197,17 +197,43 @@ async function init() {
   const locateBtn = document.getElementById("locate-btn");
   locateBtn.addEventListener("click", () => {
     // Leaflet の位置取得（ブラウザに許可ダイアログが出る）
-    map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+    map.locate({
+      setView: true,
+      maxZoom: 16,
+      enableHighAccuracy: true,
+      maximumAge: 0,   // キャッシュを使わない
+      timeout: 10000,  // 10秒で諦める
+    });
   });
 
   map.on("locationfound", (e) => {
-    // 既存の現在地表示を消す
     if (myLocationMarker) map.removeLayer(myLocationMarker);
     if (myAccuracyCircle) map.removeLayer(myAccuracyCircle);
 
-    myLocationMarker = L.marker(e.latlng).addTo(map).bindPopup("現在地").openPopup();
+    myLocationMarker = L.marker(e.latlng).addTo(map);
     myAccuracyCircle = L.circle(e.latlng, { radius: e.accuracy }).addTo(map);
+
+    const popupHtml = `
+      <div style="display:flex; gap:10px; align-items:center;">
+        <b>現在地</b>
+        <a href="#" id="clear-my-location" style="text-decoration:underline;">消す</a>
+      </div>
+    `;
+
+    myLocationMarker.bindPopup(popupHtml).openPopup();
+
+    // popupが開いた後にDOMができるので、そのタイミングでイベントを付ける
+    myLocationMarker.once("popupopen", () => {
+      const a = document.getElementById("clear-my-location");
+      if (!a) return;
+      a.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        if (myLocationMarker) { map.removeLayer(myLocationMarker); myLocationMarker = null; }
+        if (myAccuracyCircle) { map.removeLayer(myAccuracyCircle); myAccuracyCircle = null; }
+      });
+    });
   });
+
 
   map.on("locationerror", (e) => {
     alert("現在地を取得できませんでした: " + (e.message || "位置情報がブロックされている可能性があります"));
