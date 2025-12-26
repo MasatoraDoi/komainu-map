@@ -75,6 +75,9 @@ async function init() {
     const filtered = applyFilter(q.value);
     drawMarkers(filtered);
   });
+
+  setTimeout(() => map.invalidateSize(), 0);
+  window.addEventListener("resize", () => map && map.invalidateSize());
 }
 
 init().catch(err => {
