@@ -4,6 +4,21 @@ let allSpots = [];
 let myLocationMarker = null;
 let myAccuracyCircle = null;
 
+let markersById = {};
+let lastSelectedSpotId = null;
+
+const PIN_COLORS = [
+  { key: "blue",   hex: "#2563eb" },
+  { key: "green",  hex: "#16a34a" },
+  { key: "yellow", hex: "#eab308" },
+  { key: "red",    hex: "#dc2626" },
+  { key: "purple", hex: "#7c3aed" },
+];
+
+const LS_KEY = "komainu_pin_colors_v1";
+const DEFAULT_COLOR = "blue";
+
+const iconCache = new Map();
 
 function escapeHtml(s) {
   return String(s ?? "")
@@ -12,6 +27,60 @@ function escapeHtml(s) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function loadColorMap() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === "object") ? obj : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveColorMap(mapObj) {
+  localStorage.setItem(LS_KEY, JSON.stringify(mapObj));
+}
+
+function getSpotColor(spotId) {
+  const m = loadColorMap();
+  return m[spotId] ?? DEFAULT_COLOR;
+}
+
+function setSpotColor(spotId, colorKey) {
+  const m = loadColorMap();
+  m[spotId] = colorKey;
+  saveColorMap(m);
+}
+
+function makePinSvg(hex) {
+  // シンプルなSVGピン（外部画像不要）
+  return `
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24">
+  <path d="M12 22s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12z"
+        fill="${hex}" stroke="#111827" stroke-width="1"/>
+  <circle cx="12" cy="10" r="2.8" fill="#ffffff" opacity="0.95"/>
+</svg>`;
+}
+
+function iconForColor(colorKey) {
+  if (iconCache.has(colorKey)) return iconCache.get(colorKey);
+
+  const c = PIN_COLORS.find(x => x.key === colorKey) ?? PIN_COLORS[0];
+  const svg = makePinSvg(c.hex).trim();
+  const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+
+  const icon = L.icon({
+    iconUrl: url,
+    iconSize: [30, 30],
+    iconAnchor: [15, 28],
+    popupAnchor: [0, -26],
+  });
+
+  iconCache.set(colorKey, icon);
+  return icon;
 }
 
 function renderDetail(spot) {
@@ -26,9 +95,44 @@ function renderDetail(spot) {
     <p style="margin:10px 0 0 0; color:#6b7280; font-size:12px;">
       座標: ${spot.lat}, ${spot.lon}
     </p>
+    <div class="color-picker">
+      <div class="label">ピンの色（保存されます）</div>
+      <div id="color-row" class="color-row"></div>
+    </div>
   `;
   document.getElementById("detail").innerHTML = html;
+  lastSelectedSpotId = spot.id ?? spot.name; // 念のため
+  renderColorPicker(spot);
 }
+
+function renderColorPicker(spot) {
+  const spotId = spot.id ?? spot.name;
+  const row = document.getElementById("color-row");
+  if (!row) return;
+
+  const current = getSpotColor(spotId);
+
+  row.innerHTML = PIN_COLORS.map(c => `
+    <button class="color-btn ${c.key === current ? "is-selected" : ""}" data-color="${c.key}" title="${c.key}">
+      <span class="color-swatch" style="background:${c.hex};"></span>
+    </button>
+  `).join("");
+
+  row.querySelectorAll(".color-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const colorKey = btn.getAttribute("data-color");
+      setSpotColor(spotId, colorKey);
+
+      // そのスポットのマーカーだけ更新（軽くて気持ちいい）
+      const marker = markersById[spotId];
+      if (marker) marker.setIcon(iconForColor(colorKey));
+
+      // UIの選択枠も更新
+      renderColorPicker(spot);
+    });
+  });
+}
+
 
 function clearMarkers() {
   for (const m of markers) map.removeLayer(m);
@@ -37,11 +141,19 @@ function clearMarkers() {
 
 function drawMarkers(spots) {
   clearMarkers();
+  markersById = {};
+
   for (const s of spots) {
-    const m = L.marker([s.lat, s.lon]).addTo(map);
+    const spotId = s.id ?? s.name;
+    const colorKey = getSpotColor(spotId);
+
+    const m = L.marker([s.lat, s.lon], { icon: iconForColor(colorKey) }).addTo(map);
+
     m.on("click", () => renderDetail(s));
     m.bindPopup(`<b>${escapeHtml(s.name)}</b><br/>クリックで詳細表示`);
+
     markers.push(m);
+    markersById[spotId] = m;
   }
 }
 
